@@ -1,6 +1,7 @@
 ﻿using Autodesk.Connectivity.Explorer.ExtensibilityTools;
 using Autodesk.Connectivity.WebServices;
 using Autodesk.Connectivity.WebServicesTools;
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -8,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+
 using AWS = Autodesk.Connectivity.WebServices;
 using VDF = Autodesk.DataManagement.Client.Framework;
 
@@ -129,7 +131,7 @@ namespace ImportObjectProperties
             {
                 Connection = result.Connection;
                 ServiceManager = result.Connection.WebServiceManager;
-                ExplorerUtil = ExplorerLoader.LoadExplorerUtil(Options.Server, Options.KnowledgeVault, ServiceManager.WebServiceCredentials.SecurityHeader.UserId, ServiceManager.WebServiceCredentials.SecurityHeader.Ticket);
+                ExplorerUtil = ExplorerLoader.LoadExplorerUtil(Options.Server, Options.KnowledgeVault, ServiceManager.WebServiceCredentials.Session.User.Id, ServiceManager.WebServiceCredentials.Session.Id);
                 DataTable table = ReadData(options.InputFile);
 
                 FileCategories = ServiceManager.CategoryService.GetCategoriesByEntityClassId("FILE", true);
@@ -396,8 +398,8 @@ namespace ImportObjectProperties
             return propDefInfo;
         }
 
-        private IEnumerable<FileAssocParam> GetFileReferences(DocumentService svc, long fileId, 
-            FileAssociationTypeEnum associationType =  FileAssociationTypeEnum.All, bool includeHidden = true)
+        private IEnumerable<FileAssocParam> GetFileReferences(DocumentService svc, long fileId,
+            FileAssociationTypeEnum associationType = FileAssociationTypeEnum.All, bool includeHidden = true)
         {
             FileAssocArray[] fileAssocationLists = svc.GetFileAssociationsByIds(new[] { fileId },
                 FileAssociationTypeEnum.None,
@@ -433,7 +435,7 @@ namespace ImportObjectProperties
 
         }
 
-        private VDF.Vault.Currency.Properties.ContentSourceProvider GetContentSourceProvider(AWS.File file)
+        private VDF.Vault.Currency.Properties.ContentSourceProvider GetContentSourceProvider(File file)
         {
             long[] contentIds = Connection.WebServiceManager.DocumentService.GetContentSourceIdsByFileIds(new long[] { file.Id });
 
@@ -442,7 +444,9 @@ namespace ImportObjectProperties
 
         private File UpdateFileProperties(File file, DataRow row)
         {
-            Autodesk.Connectivity.WebServices.ByteArray fileContents = null;
+            ByteArray fileContents = null;
+
+            string fileExtension = System.IO.Path.GetExtension(file.Name);
 
             File theFile = UpdateFileCategory(file, row);
             theFile = UpdateFileRevision(theFile, row);
@@ -481,8 +485,8 @@ namespace ImportObjectProperties
                 VDF.Vault.Currency.Properties.ContentSourceProvider provider = GetContentSourceProvider(file);
                 VDF.Vault.Currency.Properties.PropertyDefinitionDictionary definitions =
                     Connection.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, VDF.Vault.Currency.Properties.PropertyDefinitionFilter.IncludeAll);
-                List<AWS.PropWriteReq> fileProperties = new List<AWS.PropWriteReq>();
-                List<AWS.PropInstParam> propertyInstances = new List<AWS.PropInstParam>();
+                List<PropWriteReq> fileProperties = new List<PropWriteReq>();
+                List<PropInstParam> propertyInstances = new List<PropInstParam>();
                 List<VDF.Vault.Currency.Properties.ContentSourcePropertyMapping> mappingDefinitions = new List<VDF.Vault.Currency.Properties.ContentSourcePropertyMapping>();
 
 
@@ -519,7 +523,7 @@ namespace ImportObjectProperties
                             if ((mapping.MappingDirection == VDF.Vault.Currency.Properties.MappingDirection.ReadWrite) ||
                                 (mapping.MappingDirection == VDF.Vault.Currency.Properties.MappingDirection.WriteToContentSource))
                             {
-                                AWS.PropWriteReq req = new AWS.PropWriteReq
+                                PropWriteReq req = new PropWriteReq
                                 {
                                     CanCreate = mapping.CreateNew,
                                     Moniker = mapping.ContentPropertyDefinition.Moniker,
@@ -534,7 +538,7 @@ namespace ImportObjectProperties
                     }
                     if (isMapped == false)
                     {
-                        AWS.PropInstParam propInst = new AWS.PropInstParam
+                        PropInstParam propInst = new PropInstParam
                         {
                             PropDefId = definition.Id,
                             Val = propertyValue,
@@ -554,7 +558,7 @@ namespace ImportObjectProperties
                 ServiceManager.DocumentService.CheckoutFile(file.Id, CheckoutFileOptions.Master, Environment.MachineName, string.Empty, "Check out for property editing", out fileContents);
 
                 #region VSK-534 - Update BOM mapped properties
-                BOM bom = ServiceManager.DocumentService.GetBOMByFileId(file.Id); 
+                BOM bom = ServiceManager.DocumentService.GetBOMByFileId(file.Id);
 
                 // if there is BOM blob available then we need to update BOM properties
                 if (bom != null)
@@ -566,25 +570,37 @@ namespace ImportObjectProperties
                 }
                 #endregion
 
+
+
                 ByteArray uploadTicket = null;
+
+                /* Addam Boord - Ketiv - 2022 Edit */
+                PropWriteRequests propWriteRequests = new PropWriteRequests()
+                {
+                    Bom = bom,
+                    Requests = fileProperties.ToArray()
+                };
 
                 if (fileProperties.Any())
                 {
-                    PropWriteResults results;
 
-                    uploadTicket = new ByteArray();
-                    uploadTicket.Bytes = ServiceManager.FilestoreService.CopyFile(ticket.Bytes, true, fileProperties.ToArray(), out results);
+                    uploadTicket = new ByteArray
+                    {
+                        Bytes = ServiceManager.FilestoreService.CopyFile(ticket.Bytes, fileExtension, true, propWriteRequests, out PropWriteResults results)
+                    };
                 }
+                /************************************/
+
                 if (propertyInstances.Any())
                 {
                     try
                     {
-                        AWS.PropInstParamArray propInstArray = new AWS.PropInstParamArray
+                        PropInstParamArray propInstArray = new PropInstParamArray
                         {
                             Items = propertyInstances.ToArray(),
                         };
 
-                        ServiceManager.DocumentService.UpdateFileProperties(new long[] { theFile.MasterId }, new AWS.PropInstParamArray[] { propInstArray });
+                        ServiceManager.DocumentService.UpdateFileProperties(new long[] { theFile.MasterId }, new PropInstParamArray[] { propInstArray });
                     }
                     catch (Exception e)
                     {
@@ -640,7 +656,7 @@ namespace ImportObjectProperties
                         long[] masterIds = new long[] { file.MasterId };
                         long[] lfCycDefIds = new long[] { def.Id };
                         long[] toStateIds = new long[] { toStateId };
-                        
+
                         File[] files = ServiceManager.DocumentServiceExtensions.UpdateFileLifeCycleDefinitions(masterIds, lfCycDefIds, toStateIds, "Updated lifecycle");
                         theFile = files[0];
                         Log(MessageCategory.Debug, "Successfully updated lifecycle definition");
@@ -869,22 +885,22 @@ namespace ImportObjectProperties
                     editableItems = ServiceManager.ItemService.UpdateItemProperties(new long[] { revId }, new PropInstParamArray[] {
                             new PropInstParamArray() {
                                 Items= propertyValues.ToArray()
-                                }   
+                                }
                         });
 
                     // update title
                     if (string.IsNullOrEmpty(title) == false)
-                        {
+                    {
                         foreach (Item editableItem in editableItems)
-                            {
+                        {
                             editableItem.Title = title;
-                            }
                         }
+                    }
                     // update description
                     if (string.IsNullOrEmpty(description) == false)
-                        {
+                    {
                         foreach (Item editableItem in editableItems)
-                            {
+                        {
                             editableItem.Detail = description;
                         }
                     }
@@ -1037,7 +1053,7 @@ namespace ImportObjectProperties
                         new PropInstParamArray[] {
                             new PropInstParamArray() {
                                 Items= propertyValues.ToArray()
-                                }   
+                                }
                         });
 
                 Log(MessageCategory.Info, "Imported properties: {0}", propertyValues.Count);

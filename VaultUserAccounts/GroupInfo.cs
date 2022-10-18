@@ -17,7 +17,7 @@ namespace VaultUserAccounts
         {
             Name = group.Name;
             EMail = group.EmailDL;
-            Active = group.IsActive;
+            Active = group.IsAct;
             Groups = new List<string>();
             Roles = new List<string>();
             Vaults = new List<string>();

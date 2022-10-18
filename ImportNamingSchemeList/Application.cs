@@ -1,9 +1,11 @@
 ﻿using Autodesk.Connectivity.WebServicesTools;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+
 using AWS = Autodesk.Connectivity.WebServices;
 using VDF = Autodesk.DataManagement.Client.Framework;
 
@@ -118,7 +120,10 @@ namespace ImportNamingSchemeList
 
         private void ProcessFileScheme()
         {
-            AWS.NumSchm[] schemes = ServiceManager.DocumentService.GetNumberingSchemesByType(AWS.NumSchmType.All);
+            /* Addam Boord - Ketiv - 2022 Edit */
+            //AWS.NumSchm[] schemes = ServiceManager.DocumentService.GetNumberingSchemesByType(AWS.NumSchmType.All);
+            AWS.NumSchm[] schemes = ServiceManager.NumberingService.GetNumberingSchemes("", AWS.NumSchmType.All); //<- Empty ClassId string returns all classes.
+            /***********************************/
             AWS.NumSchm scheme = schemes.FirstOrDefault(s => s.Name.Equals(Options.SchemeName, StringComparison.InvariantCultureIgnoreCase));
 
             if (scheme == null)
@@ -144,7 +149,10 @@ namespace ImportNamingSchemeList
             if (fieldCount > 0)
             {
                 Log(MessageCategory.Info, "Saving scheme changes");
-                ServiceManager.DocumentService.UpdateNumberingScheme(scheme.SchmID, scheme.Name, scheme.FieldArray, scheme.ToUpper);
+                /* Addam Boord - Ketiv - 2022 Edit */
+                //ServiceManager.DocumentService.UpdateNumberingScheme(scheme.SchmID, scheme.Name, scheme.FieldArray, scheme.ToUpper);
+                ServiceManager.NumberingService.UpdateNumberingScheme(scheme.SchmID, scheme.Name, scheme.Provider, scheme.FieldArray, scheme.ToUpper, scheme.ReuseNum);
+                /***********************************/
             }
             else
             {
@@ -154,7 +162,11 @@ namespace ImportNamingSchemeList
 
         private void ProcessItemScheme()
         {
-            AWS.NumSchm[] schemes = ServiceManager.ItemService.GetNumberingSchemesByType(AWS.NumSchmType.All);
+            /* Addam Boord - Ketiv - 2022 Edit */
+            //AWS.NumSchm[] schemes = ServiceManager.ItemService.GetNumberingSchemesByType(AWS.NumSchmType.All);
+            AWS.NumSchm[] schemes = ServiceManager.NumberingService.GetNumberingSchemes("", AWS.NumSchmType.All); //<- Empty ClassId string returns all classes.
+
+            /***********************************/
             AWS.NumSchm scheme = schemes.FirstOrDefault(s => s.Name.Equals(Options.SchemeName, StringComparison.InvariantCultureIgnoreCase));
 
             if (scheme == null)
@@ -180,7 +192,10 @@ namespace ImportNamingSchemeList
             if (fieldCount > 0)
             {
                 Log(MessageCategory.Info, "Saving scheme changes");
-                ServiceManager.ItemService.UpdateNumberingScheme(scheme);
+                /* Addam Boord - Ketiv - 2022 Edit */
+                //ServiceManager.ItemService.UpdateNumberingScheme(scheme);
+                ServiceManager.NumberingService.UpdateNumberingScheme(scheme.SchmID, scheme.Name, scheme.Provider, scheme.FieldArray, scheme.ToUpper, scheme.ReuseNum);
+                /***********************************/
             }
             else
             {

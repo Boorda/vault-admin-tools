@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportObjectProperties", "ImportObjectProperties.csproj", "{D5788581-ED09-403D-83CA-87D869F75129}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Import Object Properties - Vault 2022", "Import Object Properties - Vault 2022.csproj", "{D5788581-ED09-403D-83CA-87D869F75129}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9BB6199D-DB73-4F34-A68F-CE87D4DE5974}
 	EndGlobalSection
 EndGlobal
