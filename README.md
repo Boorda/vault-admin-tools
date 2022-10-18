@@ -22,7 +22,7 @@ See ./doc/Vault Admin Tools.rtf
 **Note that in order to run the tools you will need to copy the following files from the Vault SDK into the directory containing your executable**
 
 * Autodesk.Connectivity.WebServices.WCF.dll
-* clmloader.dll
+* clmloader.dll <- Only Vault 2019 and below? Not needed in newer versions.
 
 ## Versioning
 The version numbers for the tool executables correspond to the major version number of Vault they will run against
