@@ -10,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-using AWS = Autodesk.Connectivity.WebServices;
 using VDF = Autodesk.DataManagement.Client.Framework;
 
 namespace ImportObjectProperties
@@ -241,7 +240,8 @@ namespace ImportObjectProperties
 
         private void HandleException(Exception ex)
         {
-            Log(MessageCategory.Error, "ERROR: {0}", VDF.Library.ExceptionParser.GetMessage(ex));
+           // Log(MessageCategory.Error, "ERROR: {0}", VDF.Library.ExceptionParser.GetMessage(ex));
+            Log(MessageCategory.Error, "ERROR: {0}",ex);
             Log(MessageCategory.Debug, " Source: {0}", ex.Source);
             Log(MessageCategory.Debug, " StackTrace: {0}", ex.StackTrace);
             Log(MessageCategory.Debug, " Target: {0}", ex.TargetSite);

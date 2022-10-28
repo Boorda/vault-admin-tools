@@ -59,6 +59,12 @@
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
       <HintPath>..\libs\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
     </Reference>
+    <Reference Include="Autodesk.Connectivity.Extensibility.Framework">
+      <HintPath>..\libs\Autodesk.Connectivity.Extensibility.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Autodesk.Connectivity.LicenseWrapper">
+      <HintPath>..\libs\Autodesk.Connectivity.LicenseWrapper.dll</HintPath>
+    </Reference>
     <Reference Include="Autodesk.Connectivity.WebServices">
       <HintPath>..\libs\Autodesk.Connectivity.WebServices.dll</HintPath>
     </Reference>
@@ -101,6 +107,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AdskLicensingSDK_5.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="DebugSymbols\Autodesk.Connectivity.Explorer.ExtensibilityTools.XML" />
     <Content Include="DebugSymbols\Autodesk.Connectivity.WebServices.XML" />
     <Content Include="DebugSymbols\Autodesk.DataManagement.Client.Framework.Vault.xml" />
