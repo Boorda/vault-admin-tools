@@ -27,13 +27,13 @@ See ./doc/Vault Admin Tools.rtf
 ## Versioning
 The version numbers for the tool executables correspond to the major version number of Vault they will run against
 
-* Vault 2017 - Version 22
-* Vault 2018 - Version 23
-* Vault 2019 - Version 24
-* Vault 2020 - Version 25
-* Vault 2021 - Version 26
-* Vault 2022 - Version 27
-* Vault 2023 - Version 28
+* Vault 2017 - API v22
+* Vault 2018 - API v23
+* Vault 2019 - API v24
+* Vault 2020 - API v25
+* Vault 2021 - API v26
+* [Vault 2022 - API v27](https://github.com/Boorda/vault-admin-tools/tree/Vault_2022)
+* Vault 2023 - API v28
 
 ## License
 See [LICENSE.md](LICENSE.md)
